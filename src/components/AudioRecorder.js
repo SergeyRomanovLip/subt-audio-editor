@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { useReactMediaRecorder } from 'react-media-recorder'
 
 export const AudioRecorder = ({ getBlob }) => {
-  const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({ audio: true })
+  const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({
+    audio: true,
+    type: 'audio/wav',
+  })
 
   useEffect(() => {
     mediaBlobUrl && getBlob(mediaBlobUrl)
