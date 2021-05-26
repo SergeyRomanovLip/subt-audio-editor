@@ -1,12 +1,16 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useEffect, useRef, useState } from 'react'
 
-export const WaveForm = ({ audio }) => {
+export const WaveForm = ({ audio, trimBlob, i }) => {
   const [preparedAudio, setPreparedAudio] = useState(false)
   const [position, setPosition] = useState(false)
   const [length, setLength] = useState(false)
   const [rect, setRect] = useState(false)
   const [canvasData, setCanvasData] = useState(false)
+  const [trim, setTrim] = useState({
+    start: 0,
+    end: 0
+  })
 
   const canvasSettings = (normalizedData) => {
     const canvas = canvasRef.current
@@ -23,7 +27,7 @@ export const WaveForm = ({ audio }) => {
       dpr,
       padding,
       ctx,
-      width,
+      width
     }
   }
   const prepareAudio = async (url) => {
@@ -42,7 +46,7 @@ export const WaveForm = ({ audio }) => {
   }
   const filterData = (audioBuffer) => {
     const rawData = audioBuffer.getChannelData(0)
-    const samples = 1000
+    const samples = 200
     const blockSize = Math.floor(rawData.length / samples)
     const filteredData = []
     for (let i = 0; i < samples; i++) {
@@ -89,19 +93,6 @@ export const WaveForm = ({ audio }) => {
       console.log('Ошибка')
     }
   }
-  const drawTimeMarker = (position, length, canvasData) => {
-    const { canvas, padding, ctx, width } = canvasData
-    let pos = (position / length) * 300 //ЗАМЕНИТЬ!!!
-    ctx.clearRect(0, -300, canvas.width, 1500)
-    draw(preparedAudio, canvasData)
-    ctx.lineWidth = 3
-    ctx.strokeStyle = 'red'
-    ctx.beginPath()
-    ctx.moveTo(pos, -50)
-    ctx.lineTo(pos, 50)
-    ctx.stroke()
-    ctx.closePath()
-  }
   const drawLineSegment = (ctx, x, y, width, isEven) => {
     ctx.lineWidth = 1
     ctx.strokeStyle = 'black'
@@ -119,10 +110,33 @@ export const WaveForm = ({ audio }) => {
     let newPosition = length * perc
     return newPosition
   }
+  const drawTimeMarker = (position, length, canvasData) => {
+    const { canvas, padding, ctx, width } = canvasData
+    let pos = (position / length) * 300 //ЗАМЕНИТЬ!!!
+    ctx.clearRect(0, -300, canvas.width, 1500)
+    draw(preparedAudio, canvasData)
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'red'
+    ctx.beginPath()
+    ctx.moveTo(pos, -50)
+    ctx.lineTo(pos, 50)
+    ctx.stroke()
+    ctx.closePath()
+  }
+  const drawRectangle = (position, length, canvasData, e) => {
+    const { canvas, padding, ctx, width } = canvasData
+    ctx.clearRect(0, -300, canvas.width, 1500)
+    draw(preparedAudio, canvasData)
+    let pos = (positionState.x / length - positionState.startX / length) * 300
+    ctx.rect((positionState.startX / length) * 300, -50, pos, 100)
+    ctx.fillStyle = 'rgba(180, 120, 255, 0.5)'
+    ctx.fill()
+  }
+
   let positionState = {
     mousedown: false,
     startX: null,
-    x: null,
+    x: null
   }
   const setCursorPositionHandler = (e) => {
     setPosition(e.currentTarget.currentTime)
@@ -130,30 +144,49 @@ export const WaveForm = ({ audio }) => {
   const choiseCursorPosition = (e) => {
     positionState.mousedown = true
     positionState.startX = calculatePosition(rect, length, e)
+    setPosition(calculatePosition(rect, length, e))
   }
 
   const extendCursorPosition = (e) => {
     if (positionState.mousedown) {
       positionState.x = calculatePosition(rect, length, e)
-      console.log(positionState)
+      drawRectangle(position, length, canvasData, e)
     }
   }
 
   const fixCursorPosition = (e) => {
     positionState.mousedown = false
+    if (positionState.x - positionState.startX > 1) {
+      setTrim({ start: positionState.startX, end: positionState.x })
+      positionState = { mousedown: false, startX: null, x: null }
+    } else {
+      setTrim({ start: 0, end: 0 })
+      setPosition(calculatePosition(rect, length, e))
+    }
   }
 
   useEffect(audioInit, [audio])
   useEffect(() => {
     canvasData && drawTimeMarker(position, length, canvasData)
   }, [position, canvasData])
+  useEffect(() => {
+    console.log(trim)
+  }, [trim])
 
   useEffect(() => {
     if ((length, rect)) {
       audioRef.current.addEventListener('timeupdate', setCursorPositionHandler)
       canvasRef.current.addEventListener('mousedown', choiseCursorPosition)
       canvasRef.current.addEventListener('mousemove', extendCursorPosition)
+      canvasRef.current.addEventListener('mouseout', extendCursorPosition)
       canvasRef.current.addEventListener('mouseup', fixCursorPosition)
+    }
+    return () => {
+      audioRef.current.removeEventListener('timeupdate', setCursorPositionHandler)
+      canvasRef.current.removeEventListener('mousedown', choiseCursorPosition)
+      canvasRef.current.removeEventListener('mousemove', extendCursorPosition)
+      canvasRef.current.removeEventListener('mouseout', extendCursorPosition)
+      canvasRef.current.removeEventListener('mouseup', fixCursorPosition)
     }
   }, [canvasRef, length, rect])
 
@@ -161,6 +194,15 @@ export const WaveForm = ({ audio }) => {
     <div>
       <canvas ref={canvasRef} />
       <audio preload={'metadata'} ref={audioRef} src={audio} controls loop />
+      {trim.start && (
+        <button
+          onClick={() => {
+            trimBlob(audio)
+          }}
+        >
+          Trim
+        </button>
+      )}
     </div>
   )
 }
