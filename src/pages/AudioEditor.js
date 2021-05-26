@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import WavEncoder from 'wav-encoder'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { WaveForm } from '../components/WaveForm'
@@ -11,22 +11,47 @@ export const AudioEditor = () => {
     if (index >= 0) {
       setAudioState((prev) => {
         let prevId = 0
-        let prevNam = 0
+        let prevEng = 0
+        let prevRus = 0
         let newArray = prev.filter((e, i) => {
           if (i === index) {
             prevId = e.id
-            prevNam = e.nam
+            prevEng = e.eng
+            prevRus = e.rus
           }
           return i !== index
         })
-        return [...newArray, { blob, id: prevId, nam: prevNam }]
+        return [...newArray, { blob, id: prevId, eng: prevEng, rus: prevRus }]
       })
     } else {
-      setAudioState((prev) => [...prev, { blob, id: idGenerator(), nam: 'unnamed' }])
+      setAudioState((prev) => [...prev, { blob, id: idGenerator(), eng: '', rus: '' }])
     }
   }
-  const changeBlobName = (e) => {
-    console.log('new name: ', e)
+  const changeBlobEng = (eng, id) => {
+    setAudioState((prev) => {
+      let newState = prev.map((e) => {
+        if (e.id === id) {
+          e.eng = eng
+          return e
+        } else {
+          return e
+        }
+      })
+      return [...newState]
+    })
+  }
+  const changeBlobRus = (rus, id) => {
+    setAudioState((prev) => {
+      let newState = prev.map((e) => {
+        if (e.id === id) {
+          e.rus = rus
+          return e
+        } else {
+          return e
+        }
+      })
+      return [...newState]
+    })
   }
 
   const trimBlob = async (sound, index, trim) => {
@@ -64,6 +89,7 @@ export const AudioEditor = () => {
 
   return (
     <div className='container'>
+      <div className='analyser'></div>
       <AudioRecorder getBlob={getBlob} />
       <div>
         <ul>
@@ -72,11 +98,13 @@ export const AudioEditor = () => {
               return (
                 <li key={index}>
                   <WaveForm
+                    audioState={audioState}
                     audio={el.blob}
                     trimBlob={trimBlob}
                     index={index}
                     audData={el}
-                    changeBlobName={changeBlobName}
+                    changeBlobEng={changeBlobEng}
+                    changeBlobRus={changeBlobRus}
                   />
                 </li>
               )
