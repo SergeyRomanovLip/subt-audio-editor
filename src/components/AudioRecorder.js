@@ -16,9 +16,12 @@ export const AudioRecorder = ({ getBlob }) => {
 
   return (
     <div>
-      <p>{status}</p>
-      <button onClick={startRecording}>Start Recording</button>
-      <button onClick={stopRecording}>Stop Recording</button>
+      <div className={status === 'recording' ? 'btn active' : 'btn'} onClick={startRecording}>
+        Record
+      </div>
+      <div className={'btn'} onClick={stopRecording}>
+        Stop
+      </div>
     </div>
   )
 }
