@@ -15,7 +15,28 @@ body
 li
     list-style-type: none
 
+.canvas
+    &-container
+        position: relative
+        .glass    
+            z-index: 500
+            content: ""
+            position: absolute
+            top: 0
+            left: 0
+            right: 0
+            bottom: 0
+            background: rgba( 255, 255, 255, 0.15 )
+            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 )
+            backdrop-filter: blur( 4.5px )
+            -webkit-backdrop-filter: blur( 4.5px )
+            border-radius: 10px
+            border: 1px solid rgba( 255, 255, 255, 0.18 )
 canvas 
+    border-top: solid 1px lightgray
+    padding-top: 7px
+    position: relative
+       
 
 .unclicable
     pointer-events: none
@@ -23,6 +44,7 @@ canvas
     color: white
 
 .audio
+    
     &-container
         width: 250px
         border: solid 1px lightgray
@@ -36,5 +58,19 @@ audio
     border-top: solid 1px lightgray
     max-width: 100%
 
+.input
+    &-name
+        display: flex
+        direction: row
+        justify-content: space-between
 input
     border: none
+
+.material-icons
+    cursor: pointer
+
+textarea
+    resize: none   
+    width: 100%
+    border: none
+    font-family: 'Roboto', sans-serif 

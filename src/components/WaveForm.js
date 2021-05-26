@@ -1,9 +1,12 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useEffect, useRef, useState } from 'react'
 
-export const WaveForm = ({ audio, trimBlob, index, audData, changeBlobName }) => {
-  const [existNameOfAudio, setNameOfAudio] = useState('')
-  const [newNameOfAudio, setNewNameOfAudio] = useState('')
+export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBlobEng, changeBlobRus }) => {
+  const [existEng, setExistEng] = useState('')
+  const [newEng, setNewEng] = useState('')
+  const [existRus, setExistRus] = useState('')
+  const [newRus, setNewRus] = useState('')
+
   const [preparedAudio, setPreparedAudio] = useState(false)
   const [position, setPosition] = useState(false)
   const [length, setLength] = useState(false)
@@ -14,16 +17,10 @@ export const WaveForm = ({ audio, trimBlob, index, audData, changeBlobName }) =>
     end: 0,
   })
 
-  const setNameOfAudioHandler = (nam, type) => {
-    if (type === 'new') {
-      setNewNameOfAudio(nam)
-    }
-  }
-
   const [canvasConfig, setCanvasConfig] = useState({
     height: 100,
     width: 250,
-    samples: 200,
+    samples: 500,
   })
 
   const canvasSettings = (normalizedData) => {
@@ -156,6 +153,7 @@ export const WaveForm = ({ audio, trimBlob, index, audData, changeBlobName }) =>
     setPosition(e.currentTarget.currentTime)
   }
   const choiseCursorPosition = (e) => {
+    audioRef.current.currentTime = calculatePosition(rect, length, e)
     positionState.mousedown = true
     positionState.startX = calculatePosition(rect, length, e)
     setPosition(calculatePosition(rect, length, e))
@@ -182,8 +180,11 @@ export const WaveForm = ({ audio, trimBlob, index, audData, changeBlobName }) =>
     canvasData && drawTimeMarker(position, length, canvasData)
   }, [position, canvasData])
   useEffect(() => {
-    setNameOfAudioHandler(audData.nam)
-  }, [])
+    setExistEng(audData.eng)
+    setNewEng(audData.eng)
+    setExistRus(audData.rus)
+    setNewRus(audData.rus)
+  }, [audioState])
   useEffect(() => {
     if ((audioRef, length, rect)) {
       audioRef.current.addEventListener('timeupdate', setCursorPositionHandler)
@@ -203,17 +204,83 @@ export const WaveForm = ({ audio, trimBlob, index, audData, changeBlobName }) =>
 
   return (
     <div className={'audio-container'}>
-      <div>
-        <input
-          value={newNameOfAudio}
+      <div className={'input-name'}>
+        <textarea
+          placeholder={'rus'}
+          contenteditable={true}
+          value={newRus}
+          rows={2}
           onChange={(e) => {
-            setNameOfAudioHandler(e.target.value, 'new')
+            setNewRus(e.target.value)
           }}
-        ></input>
-        <span class='material-icons-outlined'>check_circle</span>
-        <span class='material-icons-outlined'>highlight_off</span>
+        ></textarea>
+        {existRus !== newRus ? (
+          <span
+            onClick={() => {
+              changeBlobEng(newEng, audData.id)
+              changeBlobRus(newRus, audData.id)
+            }}
+            className='material-icons'
+          >
+            check_circle
+          </span>
+        ) : (
+          ''
+        )}
+        {existRus !== newRus ? (
+          <span
+            onClick={() => {
+              setNewRus(existRus)
+            }}
+            className='material-icons'
+          >
+            highlight_off
+          </span>
+        ) : (
+          ''
+        )}
       </div>
-      <canvas ref={canvasRef} style={{ width: canvasConfig.width + 'px', height: canvasConfig.height + 'px' }} />
+      <div className={'input-name'}>
+        <textarea
+          placeholder={'eng'}
+          contenteditable={true}
+          value={newEng}
+          rows={2}
+          onChange={(e) => {
+            setNewEng(e.target.value)
+          }}
+        ></textarea>
+        {existEng !== newEng ? (
+          <span
+            onClick={() => {
+              changeBlobEng(newEng, audData.id)
+              changeBlobRus(newRus, audData.id)
+            }}
+            className='material-icons'
+          >
+            check_circle
+          </span>
+        ) : (
+          ''
+        )}
+        {existEng !== newEng ? (
+          <span
+            onClick={() => {
+              setNewEng(existEng)
+            }}
+            className='material-icons'
+          >
+            highlight_off
+          </span>
+        ) : (
+          ''
+        )}
+      </div>
+      <div className='canvas-container'>
+        <canvas ref={canvasRef} style={{ width: canvasConfig.width + 'px', height: canvasConfig.height + 'px' }} />
+        {/* <div className='glass'></div> */}
+      </div>
+
       <audio preload={'metadata'} ref={audioRef} src={audio} controls loop />
       <div
         className={`btn ${trim.start !== 0 ? '' : 'unclicable'}`}
