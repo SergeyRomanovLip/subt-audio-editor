@@ -1,12 +1,12 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useEffect, useRef, useState } from 'react'
 
-export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBlobEng, changeBlobRus }) => {
+export const WaveForm = ({ collapsed, audioState, audio, trimBlob, audData, changeBlobEng, changeBlobRus }) => {
   const [existEng, setExistEng] = useState('')
   const [newEng, setNewEng] = useState('')
   const [existRus, setExistRus] = useState('')
   const [newRus, setNewRus] = useState('')
-
+  const [ownCollapsed, setOwnCollapsed] = useState(false)
   const [preparedAudio, setPreparedAudio] = useState(false)
   const [position, setPosition] = useState(false)
   const [length, setLength] = useState(false)
@@ -14,14 +14,18 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
   const [canvasData, setCanvasData] = useState(false)
   const [trim, setTrim] = useState({
     start: 0,
-    end: 0,
+    end: 0
   })
 
   const [canvasConfig, setCanvasConfig] = useState({
     height: 100,
     width: 250,
-    samples: 500,
+    samples: 500
   })
+
+  const collapse = () => {
+    ownCollapsed ? setOwnCollapsed(false) : setOwnCollapsed(true)
+  }
 
   const canvasSettings = (normalizedData) => {
     const canvas = canvasRef.current
@@ -38,7 +42,7 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
       dpr,
       padding,
       ctx,
-      width,
+      width
     }
   }
   const prepareAudio = async (url) => {
@@ -147,7 +151,7 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
   let positionState = {
     mousedown: false,
     startX: null,
-    x: null,
+    x: null
   }
   const setCursorPositionHandler = (e) => {
     setPosition(e.currentTarget.currentTime)
@@ -175,6 +179,9 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
     }
   }
 
+  useEffect(() => {
+    setOwnCollapsed(collapsed)
+  }, [collapsed])
   useEffect(audioInit, [audio])
   useEffect(() => {
     canvasData && drawTimeMarker(position, length, canvasData)
@@ -190,14 +197,12 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
       audioRef.current.addEventListener('timeupdate', setCursorPositionHandler)
       canvasRef.current.addEventListener('mousedown', choiseCursorPosition)
       canvasRef.current.addEventListener('mousemove', extendCursorPosition)
-      // canvasRef.current.addEventListener('mouseout', fixCursorPosition)
       canvasRef.current.addEventListener('mouseup', fixCursorPosition)
     }
     return () => {
       audioRef.current.removeEventListener('timeupdate', setCursorPositionHandler)
       canvasRef.current.removeEventListener('mousedown', choiseCursorPosition)
       canvasRef.current.removeEventListener('mousemove', extendCursorPosition)
-      // canvasRef.current.removeEventListener('mouseout', fixCursorPosition)
       canvasRef.current.removeEventListener('mouseup', fixCursorPosition)
     }
   }, [canvasRef, length, rect])
@@ -207,7 +212,6 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
       <div className={'input-name'}>
         <textarea
           placeholder={'rus'}
-          contenteditable={true}
           value={newRus}
           rows={2}
           onChange={(e) => {
@@ -243,7 +247,6 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
       <div className={'input-name'}>
         <textarea
           placeholder={'eng'}
-          contenteditable={true}
           value={newEng}
           rows={2}
           onChange={(e) => {
@@ -276,24 +279,28 @@ export const WaveForm = ({ audioState, audio, trimBlob, index, audData, changeBl
           ''
         )}
       </div>
-      <div className='canvas-container'>
-        <canvas ref={canvasRef} style={{ width: canvasConfig.width + 'px', height: canvasConfig.height + 'px' }} />
-        {/* <div className='glass'></div> */}
-      </div>
 
-      <audio preload={'metadata'} ref={audioRef} src={audio} controls loop />
-      <div
-        className={`btn ${trim.start !== 0 ? '' : 'unclicable'}`}
-        onClick={() => {
-          setTrim({
-            start: 0,
-            end: 0,
-          })
-          trimBlob(audio, index, trim)
-        }}
-      >
-        Trim
+      <div style={{ display: ownCollapsed ? 'none' : 'block' }}>
+        <div className='canvas-container'>
+          <canvas ref={canvasRef} style={{ width: canvasConfig.width + 'px', height: canvasConfig.height + 'px' }} />
+          {/* <div className='glass'></div> */}
+        </div>
+
+        <audio preload={'metadata'} ref={audioRef} src={audio} controls loop />
+        <div
+          className={`btn ${trim.start !== 0 ? '' : 'unclicable'}`}
+          onClick={() => {
+            setTrim({
+              start: 0,
+              end: 0
+            })
+            trimBlob(audio, audData.id, trim)
+          }}
+        >
+          Trim
+        </div>
       </div>
+      <div onClick={collapse} style={{ margin: 0 }} className='btn'></div>
     </div>
   )
 }
