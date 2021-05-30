@@ -1,7 +1,8 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useEffect, useRef, useState } from 'react'
+import { useReactMediaRecorder } from 'react-media-recorder'
 
-export const WaveForm = ({ collapsed, audioState, audio, trimBlob, audData, changeBlobEng, changeBlobRus }) => {
+export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audio, trimBlob, audData, changeBlobEng, changeBlobRus }) => {
   const [existEng, setExistEng] = useState('')
   const [newEng, setNewEng] = useState('')
   const [existRus, setExistRus] = useState('')
@@ -192,6 +193,7 @@ export const WaveForm = ({ collapsed, audioState, audio, trimBlob, audData, chan
     setExistRus(audData.rus)
     setNewRus(audData.rus)
   }, [audioState])
+
   useEffect(() => {
     if ((audioRef, length, rect)) {
       audioRef.current.addEventListener('timeupdate', setCursorPositionHandler)
@@ -200,10 +202,12 @@ export const WaveForm = ({ collapsed, audioState, audio, trimBlob, audData, chan
       canvasRef.current.addEventListener('mouseup', fixCursorPosition)
     }
     return () => {
-      audioRef.current.removeEventListener('timeupdate', setCursorPositionHandler)
-      canvasRef.current.removeEventListener('mousedown', choiseCursorPosition)
-      canvasRef.current.removeEventListener('mousemove', extendCursorPosition)
-      canvasRef.current.removeEventListener('mouseup', fixCursorPosition)
+      if (audioRef.current && canvasRef.current) {
+        audioRef.current.removeEventListener('timeupdate', setCursorPositionHandler)
+        canvasRef.current.removeEventListener('mousedown', choiseCursorPosition)
+        canvasRef.current.removeEventListener('mousemove', extendCursorPosition)
+        canvasRef.current.removeEventListener('mouseup', fixCursorPosition)
+      }
     }
   }, [canvasRef, length, rect])
 
@@ -300,7 +304,29 @@ export const WaveForm = ({ collapsed, audioState, audio, trimBlob, audData, chan
           Trim
         </div>
       </div>
-      <div onClick={collapse} style={{ margin: 0 }} className='btn'></div>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div onClick={collapse} style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }} className='btn'>
+          Collapse
+        </div>
+        <div
+          onClick={() => {
+            deleteBlob(audData.id)
+          }}
+          style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }}
+          className='btn'
+        >
+          Delete
+        </div>
+        <div
+          onClick={() => {
+            reRecordBlob(audData.id)
+          }}
+          style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }}
+          className='btn'
+        >
+          ReRecord
+        </div>
+      </div>
     </div>
   )
 }

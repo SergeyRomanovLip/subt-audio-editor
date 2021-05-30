@@ -1,15 +1,19 @@
+import getBlobDuration from 'get-blob-duration'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import WavEncoder from 'wav-encoder'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { WaveForm } from '../components/WaveForm'
+import { ToolbarContext } from '../context/ToolbarContext'
 import { idGenerator } from '../utils/idGenerator'
 import { AppContext } from './../context/AppContext'
 
 export const AudioEditor = () => {
   const [audioState, setAudioState] = useState([])
   const { appDispatch, appState } = useContext(AppContext)
+  const { setControllers } = useContext(ToolbarContext)
   const [collapsed, setCollapsed] = useState(false)
   const fileRef = useRef()
+  const audioRecorderRef = useRef()
 
   const initializing = () => {
     if (localStorage.getItem('project')) {
@@ -27,13 +31,26 @@ export const AudioEditor = () => {
       reader.readAsDataURL(blob)
       reader.onloadend = function () {
         let base64 = reader.result
-        console.log(base64)
         resolve(base64)
       }
     })
   }
-  const getBlob = async (blob, id) => {
+  const deleteBlob = (id) => {
+    setAudioState((prev) => {
+      let newState = prev.filter((el) => {
+        return el.id !== id
+      })
+      newState.length === 0 && appDispatch({ type: 'UPDATE-AUDIO', payload: [] })
+      return [...newState]
+    })
+  }
+  const reRecordBlob = (id) => {
+    audioRecorderRef.current.reRecordItem(id)
+  }
+  const getBlob = async (blob, id, foo) => {
+    foo && foo()
     let base64Audio = await promiseReader(blob)
+    let duration = await getBlobDuration(blob)
     setAudioState((prev) => {
       let exist = false
       prev.forEach((e) => {
@@ -46,12 +63,13 @@ export const AudioEditor = () => {
             if (e.id === id) {
               e.blob = blob
               e.base64Audio = base64Audio
+              e.duration = duration
               return e
             } else {
               return e
             }
           })
-        : [...prev, { blob, base64Audio, id: idGenerator(), eng: '', rus: '' }]
+        : [...prev, { blob, base64Audio, duration, id: idGenerator(), eng: '', rus: '' }]
       return [...newState]
     })
   }
@@ -108,11 +126,9 @@ export const AudioEditor = () => {
         })
       })
   }
-
   const downloadProject = () => {
     return 'data:text/json;charset=utf-8,' + localStorage.getItem('project')
   }
-
   const openProjectPromise = async (file) => {
     return new Promise((resolve, reject) => {
       var fr = new FileReader()
@@ -122,31 +138,48 @@ export const AudioEditor = () => {
       fr.readAsText(file)
     })
   }
-
   const openProject = async (e) => {
     let json = await openProjectPromise(fileRef.current.files[0])
     setAudioState(JSON.parse(json))
   }
-
+  const createNewProject = () => {
+    let conf = window.confirm('All unsaved data will be lost')
+    conf && setAudioState([])
+    conf && appDispatch({ type: 'UPDATE-AUDIO', payload: [] })
+  }
   useEffect(() => {
     if (audioState.length > 0) {
       appDispatch({ type: 'UPDATE-AUDIO', payload: audioState })
     }
   }, [audioState])
-
+  useEffect(() => {
+    setControllers([
+      <a download='project.json' className='btn' href={downloadProject()}>
+        Save project
+      </a>,
+      <input type='file' id='file-input-id' ref={fileRef} onChange={openProject} style={{ display: 'none' }}></input>,
+      <div className='btn' onClick={createNewProject}>
+        Create project
+      </div>,
+      <div
+        className='btn'
+        onClick={() => {
+          fileRef.current.click()
+        }}
+      >
+        Open project
+      </div>
+    ])
+  }, [audioState, appState, collapsed])
   useEffect(initializing, [])
 
   return (
     <div className='audioContainer'>
-      <AudioRecorder getBlob={getBlob} />
+      <AudioRecorder ref={audioRecorderRef} getBlob={getBlob} reRecordBlob={reRecordBlob} />
       <div>
         <div className='btn' onClick={colapse}>
-          colapse
+          Collapse
         </div>
-        <a download='project.json' className='btn' href={downloadProject()}>
-          download project
-        </a>
-        <input type='file' id='file-input-id' ref={fileRef} onChange={openProject}></input>
         <ul>
           {audioState.length > 0 &&
             audioState.map((el, index) => {
@@ -154,6 +187,8 @@ export const AudioEditor = () => {
                 <li key={index}>
                   <WaveForm
                     collapsed={collapsed}
+                    deleteBlob={deleteBlob}
+                    reRecordBlob={reRecordBlob}
                     audioState={audioState}
                     audio={el.base64Audio}
                     trimBlob={trimBlob}

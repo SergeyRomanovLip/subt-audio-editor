@@ -2,6 +2,7 @@ import getBlobDuration from 'get-blob-duration'
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { AppContext } from './../context/AppContext'
 import { TextElement } from './TextElement'
+import { idGenerator } from './../utils/idGenerator'
 
 export const TextContainer = () => {
   const { appState } = useContext(AppContext)
@@ -18,9 +19,9 @@ export const TextContainer = () => {
 
   const playExactElement = async (elem, index) => {
     setPlayingElem({ blob: elem.base64Audio, index: index })
-    let duration = await getBlobDuration(elem.base64Audio)
+    // let duration = await getBlobDuration(elem.base64Audio)
     audioRef.current.play()
-    await delay(duration)
+    await delay(elem.duration)
   }
 
   const text = useCallback(
@@ -39,9 +40,9 @@ export const TextContainer = () => {
               console.log('do nothing')
             } else {
               setPlayingElem({ blob: e.base64Audio, index: i })
-              let duration = await getBlobDuration(e.base64Audio)
+              // let duration = await getBlobDuration(e.base64Audio)
               audioRef.current.play()
-              await delay(duration)
+              await delay(e.duration)
               if (i === length - 1) {
                 console.log('Finish')
                 setPlayingElem(false)
@@ -59,7 +60,7 @@ export const TextContainer = () => {
 
   return (
     <div className={'textContainer'}>
-      <audio ref={audioRef} src={playingElem && playingElem.blob} className={'player'}></audio>
+      <audio ref={audioRef} src={playingElem ? playingElem.blob : undefined} className={'player'}></audio>
       <div
         onClick={() => {
           text.play(playingElem)
@@ -80,7 +81,14 @@ export const TextContainer = () => {
         {appState.project
           ? appState.project.map((elem, index) => {
               return (
-                <TextElement key={index} playExactElement={playExactElement} playingElem={playingElem.index} index={index} elem={elem} lang={'eng'} />
+                <TextElement
+                  key={index + idGenerator()}
+                  playExactElement={playExactElement}
+                  playingElem={playingElem.index}
+                  index={index}
+                  elem={elem}
+                  lang={'eng'}
+                />
               )
             })
           : null}
@@ -89,7 +97,14 @@ export const TextContainer = () => {
         {appState.project
           ? appState.project.map((elem, index) => {
               return (
-                <TextElement key={index} playExactElement={playExactElement} playingElem={playingElem.index} index={index} elem={elem} lang={'rus'} />
+                <TextElement
+                  key={index + idGenerator()}
+                  playExactElement={playExactElement}
+                  playingElem={playingElem.index}
+                  index={index}
+                  elem={elem}
+                  lang={'rus'}
+                />
               )
             })
           : null}

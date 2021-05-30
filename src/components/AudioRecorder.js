@@ -1,13 +1,30 @@
-import React, { useEffect } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { useReactMediaRecorder } from 'react-media-recorder'
 
-export const AudioRecorder = ({ getBlob }) => {
-  const { status, startRecording, stopRecording, mediaBlobUrl, previewStream } = useReactMediaRecorder({
+export const AudioRecorder = forwardRef(({ getBlob }, ref) => {
+  const { status, startRecording, stopRecording, mediaBlobUrl, previewStream, clearBlobUrl } = useReactMediaRecorder({
     audio: true
   })
+  const [id, setId] = useState(undefined)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      reRecordItem(id) {
+        setId(id)
+        clearBlobUrl()
+        startRecording()
+      }
+    }),
+    []
+  )
 
   useEffect(() => {
-    mediaBlobUrl && getBlob(mediaBlobUrl)
+    console.log(id)
+  }, [id])
+
+  useEffect(() => {
+    mediaBlobUrl && getBlob(mediaBlobUrl, id, setId(undefined))
   }, [mediaBlobUrl])
 
   useEffect(() => {
@@ -24,4 +41,4 @@ export const AudioRecorder = ({ getBlob }) => {
       </div>
     </div>
   )
-}
+})

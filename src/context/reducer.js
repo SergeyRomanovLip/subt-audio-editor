@@ -6,6 +6,7 @@ export const reducer = (state, action) => {
     case 'SUB':
       return { count: state.count - 1 }
     case 'UPDATE-AUDIO':
+      console.log(action)
       localStorage.setItem('project', JSON.stringify(action.payload))
       return { ...state, project: action.payload }
     default:

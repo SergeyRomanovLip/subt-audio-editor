@@ -3,6 +3,13 @@ body
     font-family: 'Roboto', sans-serif
     overflow: hidden
 
+.toolbar
+    position: relative
+    height: 50px
+    display: flex
+    justify-content: start
+    align-items: center
+
 .wrapper
     display: flex 
     flex-direction: row
@@ -39,6 +46,8 @@ body
         width: calc( 100% - 10px ) 
         padding: 5px
         border-top: solid 1px lightgray
+.text-item
+    display: inline-block
 
 .btn
     width: 100px
@@ -48,6 +57,8 @@ body
     padding: 3px
     text-align: center
     cursor: pointer
+    text-decoration: none
+    color: black
     &.active
         background: red
         color: white
