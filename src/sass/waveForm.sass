@@ -11,6 +11,11 @@ body
     justify-content: start
     align-items: center
 
+.textElementForHover
+    &:hover
+        display: inline-block
+        background: red
+
 .wrapper
     display: flex 
     flex-direction: row
@@ -92,14 +97,12 @@ canvas
     padding-top: 7px
     position: relative
        
-
 .unclicable
     pointer-events: none
     background: lightgray
     color: white
 
 .audio
-    
     &-container
         position: relative
         width: 250px
@@ -126,6 +129,11 @@ canvas
             color: white
             width: 25px
             cursor: pointer
+            transition: all 0.3s
+            &:hover
+                width: 30px
+                right: -30px
+                
 audio
     border-top: solid 1px lightgray
     max-width: 100%
