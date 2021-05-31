@@ -1,3 +1,4 @@
+@import 'variables.sass'
 
 body
     font-family: 'Roboto', sans-serif
@@ -25,7 +26,6 @@ body
     position: relative
     border: solid 1px lightgray
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px
-
 .textWrapper
     width: 60%
     max-height: 90vh
@@ -47,7 +47,8 @@ body
         padding: 5px
         border-top: solid 1px lightgray
 .text-item
-    display: inline-block
+    &:hover
+        background: $blue
 
 .btn
     width: 100px
@@ -62,7 +63,6 @@ body
     &.active
         background: red
         color: white
-        pointer-events: none
 ul
     padding: 0
 
@@ -86,6 +86,7 @@ li
             -webkit-backdrop-filter: blur( 4.5px )
             border-radius: 10px
             border: 1px solid rgba( 255, 255, 255, 0.18 )
+
 canvas 
     border-top: solid 1px lightgray
     padding-top: 7px
@@ -100,6 +101,7 @@ canvas
 .audio
     
     &-container
+        position: relative
         width: 250px
         border: solid 1px lightgray
         padding: 3px
@@ -108,6 +110,22 @@ canvas
         flex-direction: column
         margin: 5px
         box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px
+        & .order-number
+            position: absolute
+            display: flex
+            flex-direction: row
+            justify-content: space-around
+            align-items: center
+            border-top-right-radius: 25px
+            border-bottom-right-radius: 25px
+            right: -25px
+            top: 15px
+            background: $blue
+            box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px
+            height: 50px
+            color: white
+            width: 25px
+            cursor: pointer
 audio
     border-top: solid 1px lightgray
     max-width: 100%

@@ -8,10 +8,6 @@ export const TextElement = ({ playingElem, index, elem, lang, playExactElement }
     setWidth(thisEl.current.clientWidth)
   }, [thisEl])
 
-  useEffect(() => {
-    console.log(width)
-  }, [width])
-
   return (
     <span
       className='text-item'

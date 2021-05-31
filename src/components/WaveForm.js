@@ -1,12 +1,24 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useEffect, useRef, useState } from 'react'
-import { useReactMediaRecorder } from 'react-media-recorder'
 
-export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audio, trimBlob, audData, changeBlobEng, changeBlobRus }) => {
+export const WaveForm = ({
+  collapsed,
+  reRecordBlob,
+  deleteBlob,
+  index,
+  audioState,
+  audio,
+  trimBlob,
+  audData,
+  changeBlobEng,
+  changeBlobRus,
+}) => {
   const [existEng, setExistEng] = useState('')
   const [newEng, setNewEng] = useState('')
   const [existRus, setExistRus] = useState('')
   const [newRus, setNewRus] = useState('')
+
+  const [reRecordingState, setReRecordingState] = useState(false)
   const [ownCollapsed, setOwnCollapsed] = useState(false)
   const [preparedAudio, setPreparedAudio] = useState(false)
   const [position, setPosition] = useState(false)
@@ -15,13 +27,13 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
   const [canvasData, setCanvasData] = useState(false)
   const [trim, setTrim] = useState({
     start: 0,
-    end: 0
+    end: 0,
   })
 
   const [canvasConfig, setCanvasConfig] = useState({
     height: 100,
     width: 250,
-    samples: 500
+    samples: 500,
   })
 
   const collapse = () => {
@@ -43,7 +55,7 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
       dpr,
       padding,
       ctx,
-      width
+      width,
     }
   }
   const prepareAudio = async (url) => {
@@ -152,7 +164,7 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
   let positionState = {
     mousedown: false,
     startX: null,
-    x: null
+    x: null,
   }
   const setCursorPositionHandler = (e) => {
     setPosition(e.currentTarget.currentTime)
@@ -213,6 +225,9 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
 
   return (
     <div className={'audio-container'}>
+      <div onClick={collapse} className='order-number'>
+        <span>{index + 1}</span>
+      </div>
       <div className={'input-name'}>
         <textarea
           placeholder={'rus'}
@@ -290,13 +305,13 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
           {/* <div className='glass'></div> */}
         </div>
 
-        <audio preload={'metadata'} ref={audioRef} src={audio} controls loop />
+        <audio preload={'metadata'} ref={audioRef} src={audio} controls />
         <div
           className={`btn ${trim.start !== 0 ? '' : 'unclicable'}`}
           onClick={() => {
             setTrim({
               start: 0,
-              end: 0
+              end: 0,
             })
             trimBlob(audio, audData.id, trim)
           }}
@@ -304,10 +319,10 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
           Trim
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <div onClick={collapse} style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }} className='btn'>
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+        {/* <div onClick={collapse} style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }} className='btn'>
           Collapse
-        </div>
+        </div> */}
         <div
           onClick={() => {
             deleteBlob(audData.id)
@@ -319,9 +334,15 @@ export const WaveForm = ({ collapsed, reRecordBlob, deleteBlob, audioState, audi
         </div>
         <div
           onClick={() => {
-            reRecordBlob(audData.id)
+            if (reRecordingState) {
+              setReRecordingState(false)
+              reRecordBlob(audData.id, 'stop')
+            } else {
+              setReRecordingState(true)
+              reRecordBlob(audData.id, 'start')
+            }
           }}
-          style={{ margin: 0, padding: 1 + 'px', fontSize: 10 }}
+          style={{ margin: 0, padding: 1 + 'px', fontSize: 10, background: reRecordingState ? 'red' : 'white' }}
           className='btn'
         >
           ReRecord

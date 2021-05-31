@@ -44,8 +44,12 @@ export const AudioEditor = () => {
       return [...newState]
     })
   }
-  const reRecordBlob = (id) => {
-    audioRecorderRef.current.reRecordItem(id)
+  const reRecordBlob = (id, status) => {
+    if (status === 'start') {
+      audioRecorderRef.current.reRecordItem(id)
+    } else if (status === 'stop') {
+      audioRecorderRef.current.stopReRecordItem(id)
+    }
   }
   const getBlob = async (blob, id, foo) => {
     foo && foo()
@@ -109,7 +113,11 @@ export const AudioEditor = () => {
       .then(function (decodedData) {
         let computedStart = (decodedData.length * start) / decodedData.duration
         let computedEnd = (decodedData.length * end) / decodedData.duration
-        const newBuffer = audioContext.createBuffer(decodedData.numberOfChannels, computedEnd - computedStart, decodedData.sampleRate)
+        const newBuffer = audioContext.createBuffer(
+          decodedData.numberOfChannels,
+          computedEnd - computedStart,
+          decodedData.sampleRate
+        )
         for (var i = 0; i < decodedData.numberOfChannels; i++) {
           newBuffer.copyToChannel(decodedData.getChannelData(i).slice(computedStart, computedEnd), i)
         }
@@ -117,7 +125,7 @@ export const AudioEditor = () => {
           channelData: Array.apply(null, { length: newBuffer.numberOfChannels - 1 - 0 + 1 })
             .map((v, i) => i + 0)
             .map((i) => newBuffer.getChannelData(i)),
-          sampleRate: newBuffer.sampleRate
+          sampleRate: newBuffer.sampleRate,
         }
         WavEncoder.encode(formattedArray).then((buffer) => {
           let blob = new Blob([buffer], { type: 'audio/wav' })
@@ -127,7 +135,18 @@ export const AudioEditor = () => {
       })
   }
   const downloadProject = () => {
+    // console.log(String.)
     return 'data:text/json;charset=utf-8,' + localStorage.getItem('project')
+    // return new Promise((resolve, reject) => {
+    //   let reader = new FileReader()
+    //   let blob = new Blob(appState.blob)
+    //   console.log(blob)
+    //   reader.readAsBinaryString(blob)
+    //   reader.onloadend = function () {
+    //     let binary = reader.result
+    //     console.log(binary)
+    //   }
+    // })
   }
   const openProjectPromise = async (file) => {
     return new Promise((resolve, reject) => {
@@ -168,7 +187,7 @@ export const AudioEditor = () => {
         }}
       >
         Open project
-      </div>
+      </div>,
     ])
   }, [audioState, appState, collapsed])
   useEffect(initializing, [])

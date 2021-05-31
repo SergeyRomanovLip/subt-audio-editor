@@ -19,7 +19,6 @@ export const TextContainer = () => {
 
   const playExactElement = async (elem, index) => {
     setPlayingElem({ blob: elem.base64Audio, index: index })
-    // let duration = await getBlobDuration(elem.base64Audio)
     audioRef.current.play()
     await delay(elem.duration)
   }
@@ -27,9 +26,10 @@ export const TextContainer = () => {
   const text = useCallback(
     {
       playStatus: false,
-      stop: function () {
+      stop: function (prevValue) {
         this.playStatus = false
-        console.log(this.playStatus)
+        setPlayingElem(false)
+        setPlayingElem(prevValue)
       },
       play: async function (playingElem) {
         this.playStatus = true
@@ -40,7 +40,6 @@ export const TextContainer = () => {
               console.log('do nothing')
             } else {
               setPlayingElem({ blob: e.base64Audio, index: i })
-              // let duration = await getBlobDuration(e.base64Audio)
               audioRef.current.play()
               await delay(e.duration)
               if (i === length - 1) {
@@ -52,8 +51,7 @@ export const TextContainer = () => {
             break
           }
         }
-        // setPlayingElem(false)
-      }
+      },
     },
     [appState]
   )
@@ -71,11 +69,19 @@ export const TextContainer = () => {
       </div>
       <div
         onClick={() => {
-          text.stop()
+          text.stop(playingElem)
         }}
         className={'btn'}
       >
         stop
+      </div>
+      <div
+        onClick={() => {
+          setPlayingElem(false)
+        }}
+        className={'btn'}
+      >
+        reset
       </div>
       <div className='langWindow'>
         {appState.project
