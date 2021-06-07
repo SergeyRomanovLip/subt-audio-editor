@@ -9,7 +9,7 @@ import { AppContext } from './../context/AppContext'
 
 export const AudioEditor = () => {
   const [audioState, setAudioState] = useState([])
-  const { appDispatch, appState } = useContext(AppContext)
+  const { appDispatch, appState, projectName } = useContext(AppContext)
   const { setControllers } = useContext(ToolbarContext)
   const [collapsed, setCollapsed] = useState(false)
   const fileRef = useRef()
@@ -168,7 +168,7 @@ export const AudioEditor = () => {
   }
   useEffect(() => {
     if (audioState.length > 0) {
-      appDispatch({ type: 'UPDATE-AUDIO', payload: audioState })
+      appDispatch({ type: 'UPDATE-AUDIO', payload: { audioState, projectName } })
     }
   }, [audioState])
   useEffect(() => {

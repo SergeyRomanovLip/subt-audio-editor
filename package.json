@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
-    "firebase": "^8.6.2",
+    "firebase": "^8.6.5",
     "fs": "0.0.1-security",
     "get-audio-duration": "^2.0.3",
     "get-blob-duration": "^1.2.0",
