@@ -113,11 +113,7 @@ export const AudioEditor = () => {
       .then(function (decodedData) {
         let computedStart = (decodedData.length * start) / decodedData.duration
         let computedEnd = (decodedData.length * end) / decodedData.duration
-        const newBuffer = audioContext.createBuffer(
-          decodedData.numberOfChannels,
-          computedEnd - computedStart,
-          decodedData.sampleRate
-        )
+        const newBuffer = audioContext.createBuffer(decodedData.numberOfChannels, computedEnd - computedStart, decodedData.sampleRate)
         for (var i = 0; i < decodedData.numberOfChannels; i++) {
           newBuffer.copyToChannel(decodedData.getChannelData(i).slice(computedStart, computedEnd), i)
         }
@@ -125,7 +121,7 @@ export const AudioEditor = () => {
           channelData: Array.apply(null, { length: newBuffer.numberOfChannels - 1 - 0 + 1 })
             .map((v, i) => i + 0)
             .map((i) => newBuffer.getChannelData(i)),
-          sampleRate: newBuffer.sampleRate,
+          sampleRate: newBuffer.sampleRate
         }
         WavEncoder.encode(formattedArray).then((buffer) => {
           let blob = new Blob([buffer], { type: 'audio/wav' })
@@ -173,9 +169,17 @@ export const AudioEditor = () => {
   }, [audioState])
   useEffect(() => {
     setControllers([
-      <a download='project.json' className='btn' href={downloadProject()}>
+      // <a download='project.json' className='btn' href={downloadProject()}>
+      //   Save project
+      // </a>,
+      <div
+        className='btn'
+        onClick={() => {
+          appDispatch({ type: 'SAVE-PROJECT', payload: { audioState, projectName } })
+        }}
+      >
         Save project
-      </a>,
+      </div>,
       <input type='file' id='file-input-id' ref={fileRef} onChange={openProject} style={{ display: 'none' }}></input>,
       <div className='btn' onClick={createNewProject}>
         Create project
@@ -187,7 +191,7 @@ export const AudioEditor = () => {
         }}
       >
         Open project
-      </div>,
+      </div>
     ])
   }, [audioState, appState, collapsed])
   useEffect(initializing, [])

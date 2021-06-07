@@ -8,9 +8,10 @@ export const reducer = (state, action) => {
     case 'SUB':
       return { count: state.count - 1 }
     case 'UPDATE-AUDIO':
-      addNewPartOfProject(action.payload.audioState, action.payload.projectName)
       localStorage.setItem('project', JSON.stringify(action.payload.audioState))
       return { ...state, project: action.payload.audioState }
+    case 'SAVE-PROJECT':
+      addNewPartOfProject(action.payload.audioState, action.payload.projectName)
     default:
       return state
   }
