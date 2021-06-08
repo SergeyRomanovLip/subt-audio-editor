@@ -1,8 +1,10 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import WavEncoder from 'wav-encoder'
+import { getExistingProjects } from '../backend/firebase'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { WaveForm } from '../components/WaveForm'
+import { LoadingContext } from '../context/LoadingContext'
 import { ToolbarContext } from '../context/ToolbarContext'
 import { idGenerator } from '../utils/idGenerator'
 import { AppContext } from './../context/AppContext'
@@ -11,11 +13,13 @@ export const AudioEditor = () => {
   const [audioState, setAudioState] = useState([])
   const { appDispatch, appState, projectName } = useContext(AppContext)
   const { setControllers } = useContext(ToolbarContext)
+  const { loadingSwitch } = useContext(LoadingContext)
   const [collapsed, setCollapsed] = useState(false)
   const fileRef = useRef()
   const audioRecorderRef = useRef()
 
   const initializing = () => {
+    getExistingProjects()
     if (localStorage.getItem('project')) {
       setAudioState(JSON.parse(localStorage.getItem('project')))
     }
@@ -113,7 +117,11 @@ export const AudioEditor = () => {
       .then(function (decodedData) {
         let computedStart = (decodedData.length * start) / decodedData.duration
         let computedEnd = (decodedData.length * end) / decodedData.duration
-        const newBuffer = audioContext.createBuffer(decodedData.numberOfChannels, computedEnd - computedStart, decodedData.sampleRate)
+        const newBuffer = audioContext.createBuffer(
+          decodedData.numberOfChannels,
+          computedEnd - computedStart,
+          decodedData.sampleRate
+        )
         for (var i = 0; i < decodedData.numberOfChannels; i++) {
           newBuffer.copyToChannel(decodedData.getChannelData(i).slice(computedStart, computedEnd), i)
         }
@@ -121,7 +129,7 @@ export const AudioEditor = () => {
           channelData: Array.apply(null, { length: newBuffer.numberOfChannels - 1 - 0 + 1 })
             .map((v, i) => i + 0)
             .map((i) => newBuffer.getChannelData(i)),
-          sampleRate: newBuffer.sampleRate
+          sampleRate: newBuffer.sampleRate,
         }
         WavEncoder.encode(formattedArray).then((buffer) => {
           let blob = new Blob([buffer], { type: 'audio/wav' })
@@ -160,7 +168,7 @@ export const AudioEditor = () => {
   const createNewProject = () => {
     let conf = window.confirm('All unsaved data will be lost')
     conf && setAudioState([])
-    conf && appDispatch({ type: 'UPDATE-AUDIO', payload: [] })
+    conf && appDispatch({ type: 'UPDATE-AUDIO', payload: { audioState: [], projectName } }) //TODO modal with fileNaming
   }
   useEffect(() => {
     if (audioState.length > 0) {
@@ -175,7 +183,7 @@ export const AudioEditor = () => {
       <div
         className='btn'
         onClick={() => {
-          appDispatch({ type: 'SAVE-PROJECT', payload: { audioState, projectName } })
+          appDispatch({ type: 'SAVE-PROJECT', payload: { audioState, projectName, callback: loadingSwitch } })
         }}
       >
         Save project
@@ -191,7 +199,7 @@ export const AudioEditor = () => {
         }}
       >
         Open project
-      </div>
+      </div>,
     ])
   }, [audioState, appState, collapsed])
   useEffect(initializing, [])

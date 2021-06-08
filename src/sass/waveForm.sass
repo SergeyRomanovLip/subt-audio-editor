@@ -4,6 +4,19 @@ body
     font-family: 'Roboto', sans-serif
     overflow: hidden
 
+.overlay
+    position: absolute
+    display: relative
+    backdrop-filter: blur(5px)
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    z-index: 1
+    display: flex
+    justify-content: space-around
+    align-items: center
+
 .toolbar
     position: relative
     height: 50px
@@ -31,6 +44,7 @@ body
     position: relative
     border: solid 1px lightgray
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px
+
 .textWrapper
     width: 60%
     max-height: 90vh
