@@ -14,10 +14,16 @@ export const Modal = ({ children }) => {
   return (
     <ModalContext.Provider value={{ setModalHandler, removeModalHandler }}>
       {modal && modal.active && modal.content && (
-        <div className='modal-body'>
-          <div className='modal-header'>{modal.content.header}</div>
-          <div className='modal-body'>{modal.content.body}</div>
-          <div className='modal-buttons'>{modal.content.buttons}</div>
+        <div className='overlay'>
+          <div className='modal'>
+            <div className='modal-header'>{modal.content.header}</div>
+            <div className='modal-body'>{modal.content.body}</div>
+            <div className='modal-buttons'>
+              {modal.content.buttons.map((e) => {
+                return e
+              })}
+            </div>
+          </div>
         </div>
       )}
       {children}

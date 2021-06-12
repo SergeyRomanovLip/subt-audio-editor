@@ -40,8 +40,9 @@ export const tryFirebase = async () => {
 // }
 
 export const getExistingProjects = async () => {
-  let listOfFiles = await storageRoot.child('projects').listAll()
-  console.log(listOfFiles.prefixes.forEach((e) => console.log(e)))
+  let listOfFiles = await firestore.collection('projects').get()
+  let projects = listOfFiles.docs.map((e) => e.data())
+  return projects
 }
 export const addNewPartOfProject = async (projectArray, projectName, callback) => {
   if (projectArray) {
@@ -53,7 +54,19 @@ export const addNewPartOfProject = async (projectArray, projectName, callback) =
     let existsNames = listOfFiles.items.map((e) => {
       return JSON.parse(e.name)
     })
-    console.log(callback)
+    let projectDescription = projectArray.map((e, i) => {
+      return { order: i, eng: e.eng, rus: e.rus, id: e.id, duration: e.duration }
+    })
+    try {
+      await firestore.collection('projects').doc(projectName).set({
+        projectName,
+        projectDescription,
+      })
+      console.log('done')
+    } catch (e) {
+      console.log(e)
+    }
+
     await Promise.all(
       projectArray.map(async (e, i) => {
         let pieceName = JSON.stringify({ order: i, eng: e.eng, rus: e.rus, id: e.id, duration: e.duration })

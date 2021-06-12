@@ -5,6 +5,7 @@ import { Loading } from './components/Loading'
 import { AppContext } from './context/AppContext.js'
 import { TextContainer } from './components/TextContainer.js'
 import { Toolbar } from './components/Toolbar.js'
+import { Modal } from './components/Modal.js'
 
 export const App = () => {
   const [appState, appDispatch] = useReducer(reducer, {})
@@ -14,16 +15,18 @@ export const App = () => {
 
   return (
     <AppContext.Provider value={{ appState, appDispatch, projectName }}>
-      <Loading>
-        <Toolbar>
-          <div className={'wrapper'}>
-            <AudioEditor />
-            <div className={'textWrapper'}>
-              <TextContainer />
+      <Modal>
+        <Loading>
+          <Toolbar>
+            <div className={'wrapper'}>
+              <AudioEditor />
+              <div className={'textWrapper'}>
+                <TextContainer />
+              </div>
             </div>
-          </div>
-        </Toolbar>
-      </Loading>
+          </Toolbar>
+        </Loading>
+      </Modal>
     </AppContext.Provider>
   )
 }

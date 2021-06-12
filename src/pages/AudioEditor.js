@@ -5,6 +5,7 @@ import { getExistingProjects } from '../backend/firebase'
 import { AudioRecorder } from '../components/AudioRecorder'
 import { WaveForm } from '../components/WaveForm'
 import { LoadingContext } from '../context/LoadingContext'
+import { ModalContext } from '../context/ModalContext'
 import { ToolbarContext } from '../context/ToolbarContext'
 import { idGenerator } from '../utils/idGenerator'
 import { AppContext } from './../context/AppContext'
@@ -14,6 +15,7 @@ export const AudioEditor = () => {
   const { appDispatch, appState, projectName } = useContext(AppContext)
   const { setControllers } = useContext(ToolbarContext)
   const { loadingSwitch } = useContext(LoadingContext)
+  const { setModalHandler, removeModalHandler } = useContext(ModalContext)
   const [collapsed, setCollapsed] = useState(false)
   const fileRef = useRef()
   const audioRecorderRef = useRef()
@@ -162,8 +164,27 @@ export const AudioEditor = () => {
     })
   }
   const openProject = async (e) => {
-    let json = await openProjectPromise(fileRef.current.files[0])
-    setAudioState(JSON.parse(json))
+    // let json = await openProjectPromise(fileRef.current.files[0])
+    // setAudioState(JSON.parse(json))
+    let existProjects = await getExistingProjects()
+
+    setModalHandler({
+      header: 'Выберите проект',
+      body: existProjects.map((pjct) => {
+        return <div>{pjct.projectName}</div>
+      }),
+      buttons: [
+        <div className='btn'>open</div>,
+        <div
+          className='btn'
+          onClick={() => {
+            removeModalHandler()
+          }}
+        >
+          close
+        </div>,
+      ],
+    })
   }
   const createNewProject = () => {
     let conf = window.confirm('All unsaved data will be lost')
@@ -195,7 +216,8 @@ export const AudioEditor = () => {
       <div
         className='btn'
         onClick={() => {
-          fileRef.current.click()
+          // fileRef.current.click()
+          openProject()
         }}
       >
         Open project
