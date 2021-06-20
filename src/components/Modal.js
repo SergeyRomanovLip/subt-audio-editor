@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ModalContext } from '../context/ModalContext'
 
 export const Modal = ({ children }) => {
   const [modal, setModal] = useState({ content: null, active: false })
+  const [modalAdditState, setModalAdditState] = useState(null)
 
   const setModalHandler = (content) => {
     setModal({ content, active: true })
@@ -11,21 +12,13 @@ export const Modal = ({ children }) => {
     setModal({ content: null, active: false })
   }
 
+  useEffect(() => {
+    console.log(modalAdditState)
+  }, modalAdditState)
+
   return (
-    <ModalContext.Provider value={{ setModalHandler, removeModalHandler }}>
-      {modal && modal.active && modal.content && (
-        <div className='overlay'>
-          <div className='modal'>
-            <div className='modal-header'>{modal.content.header}</div>
-            <div className='modal-body'>{modal.content.body}</div>
-            <div className='modal-buttons'>
-              {modal.content.buttons.map((e) => {
-                return e
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+    <ModalContext.Provider value={{ setModalHandler, removeModalHandler, modalAdditState, setModalAdditState }}>
+      {modal && modal.active && modal.content}
       {children}
     </ModalContext.Provider>
   )

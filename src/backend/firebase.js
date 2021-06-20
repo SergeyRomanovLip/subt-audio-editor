@@ -44,6 +44,25 @@ export const getExistingProjects = async () => {
   let projects = listOfFiles.docs.map((e) => e.data())
   return projects
 }
+
+export const downloadProjectHandler = async (projectName, loading) => {
+  console.log(projectName)
+  if (projectName) {
+    try {
+      let listOfFiles = await storageRoot.child(`/projects/${projectName}`).list()
+      let parsedFiles = await Promise.all(
+        listOfFiles.items.map(async (e) => {
+          return { ...JSON.parse(e.name), blob: await e.getDownloadURL() }
+        })
+      )
+
+      return parsedFiles
+    } catch (e) {
+      console.log(e)
+    }
+  }
+}
+
 export const addNewPartOfProject = async (projectArray, projectName, callback) => {
   if (projectArray) {
     callback(true)

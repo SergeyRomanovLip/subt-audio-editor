@@ -62,9 +62,15 @@ export const WaveForm = ({
     window.AudioContext = window.AudioContext || window.webkitAudioContext
     const audioContext = new AudioContext()
     let currentBuffer = null
-    let normalized = await fetch(url)
-      .then((response) => response.arrayBuffer())
-      .then((arrayBuffer) => audioContext.decodeAudioData(arrayBuffer))
+    let normalized = await fetch(url, { mode: 'no-cors' })
+      .then((response) => {
+        console.log(response)
+        response.blob().arrayBuffer()
+      })
+      .then((arrayBuffer) => {
+        console.log(arrayBuffer)
+        audioContext.decodeAudioData(arrayBuffer)
+      })
       .then((audioBuffer) => {
         let filtered = filterData(audioBuffer)
         let normalizedFinal = normalizeData(filtered)

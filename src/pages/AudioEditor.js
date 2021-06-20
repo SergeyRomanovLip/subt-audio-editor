@@ -1,8 +1,9 @@
 import getBlobDuration from 'get-blob-duration'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import WavEncoder from 'wav-encoder'
-import { getExistingProjects } from '../backend/firebase'
+import { downloadProjectHandler, getExistingProjects } from '../backend/firebase'
 import { AudioRecorder } from '../components/AudioRecorder'
+import { ModalProjectChooser } from '../components/ModalProjectChooser'
 import { WaveForm } from '../components/WaveForm'
 import { LoadingContext } from '../context/LoadingContext'
 import { ModalContext } from '../context/ModalContext'
@@ -15,7 +16,7 @@ export const AudioEditor = () => {
   const { appDispatch, appState, projectName } = useContext(AppContext)
   const { setControllers } = useContext(ToolbarContext)
   const { loadingSwitch } = useContext(LoadingContext)
-  const { setModalHandler, removeModalHandler } = useContext(ModalContext)
+  const { setModalHandler, removeModalHandler, modalAdditState, setModalAdditState } = useContext(ModalContext)
   const [collapsed, setCollapsed] = useState(false)
   const fileRef = useRef()
   const audioRecorderRef = useRef()
@@ -30,7 +31,7 @@ export const AudioEditor = () => {
     collapsed ? setCollapsed(false) : setCollapsed(true)
   }
   const promiseReader = async (bl) => {
-    let blob = await fetch(bl)
+    let blob = await fetch(bl, { mode: 'no-cors' })
     blob = await blob.blob()
     return new Promise((resolve, reject) => {
       let reader = new FileReader()
@@ -113,7 +114,7 @@ export const AudioEditor = () => {
     window.AudioContext = window.AudioContext || window.webkitAudioContext
     let { start, end } = trim
     let audioContext = new AudioContext()
-    let cropped = await fetch(sound)
+    let cropped = await fetch(sound, { mode: 'no-cors' })
       .then((response) => response.arrayBuffer())
       .then((arrayBuffer) => audioContext.decodeAudioData(arrayBuffer))
       .then(function (decodedData) {
@@ -166,25 +167,12 @@ export const AudioEditor = () => {
   const openProject = async (e) => {
     // let json = await openProjectPromise(fileRef.current.files[0])
     // setAudioState(JSON.parse(json))
-    let existProjects = await getExistingProjects()
+    let openProjectHandler = async (res) => {
+      let downloadedProject = await downloadProjectHandler(res.projectName)
+      appDispatch({ type: 'UPDATE-AUDIO', payload: { audioState: downloadedProject, projectName } })
+    }
 
-    setModalHandler({
-      header: 'Выберите проект',
-      body: existProjects.map((pjct) => {
-        return <div>{pjct.projectName}</div>
-      }),
-      buttons: [
-        <div className='btn'>open</div>,
-        <div
-          className='btn'
-          onClick={() => {
-            removeModalHandler()
-          }}
-        >
-          close
-        </div>,
-      ],
-    })
+    setModalHandler(<ModalProjectChooser callback={openProjectHandler} />)
   }
   const createNewProject = () => {
     let conf = window.confirm('All unsaved data will be lost')
@@ -243,7 +231,7 @@ export const AudioEditor = () => {
                     deleteBlob={deleteBlob}
                     reRecordBlob={reRecordBlob}
                     audioState={audioState}
-                    audio={el.base64Audio}
+                    audio={el.blob}
                     trimBlob={trimBlob}
                     index={index}
                     audData={el}
