@@ -1,0 +1,36 @@
+@import 'variables.sass'
+
+.overlay
+    position: absolute
+    display: relative
+    backdrop-filter: blur(5px)
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    z-index: 1
+    display: flex
+    justify-content: space-around
+    align-items: center
+
+
+.modal
+    border: solid 1px lightgray
+    width: 300px
+    background-color: white
+    &-header
+        padding: 3px
+        border-bottom: solid 1px lightgray
+        margin-bottom: 5px
+        
+    &-body
+        padding: 3px
+    &-buttons
+        margin-top: 5px
+        border-top: solid 1px lightgray
+        display: flex
+        flex-direction: row
+        justify-content: space-around
+
+
+        

@@ -11,7 +11,7 @@ export const reducer = (state, action) => {
       localStorage.setItem('project', JSON.stringify(action.payload.audioState))
       return { ...state, project: action.payload.audioState }
     case 'SAVE-PROJECT':
-      addNewPartOfProject(action.payload.audioState, action.payload.projectName)
+      addNewPartOfProject(action.payload.audioState, action.payload.projectName, action.payload.callback)
     default:
       return state
   }

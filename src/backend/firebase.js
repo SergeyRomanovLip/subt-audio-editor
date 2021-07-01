@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: 'subt-audio-editor',
   storageBucket: 'subt-audio-editor.appspot.com',
   messagingSenderId: '692733242355',
-  appId: '1:692733242355:web:dea2a21a95de69a6984086'
+  appId: '1:692733242355:web:dea2a21a95de69a6984086',
 }
 
 firebase.initializeApp(firebaseConfig)
@@ -25,7 +25,7 @@ export const tryFirebase = async () => {
     .add({
       first: 'Ada',
       last: 'Lovelace',
-      born: 1815
+      born: 1815,
     })
     .then((docRef) => {
       console.log('Document written with ID: ', docRef.id)
@@ -39,8 +39,33 @@ export const tryFirebase = async () => {
 //   firestore.
 // }
 
-export const addNewPartOfProject = async (projectArray, projectName) => {
+export const getExistingProjects = async () => {
+  let listOfFiles = await firestore.collection('projects').get()
+  let projects = listOfFiles.docs.map((e) => e.data())
+  return projects
+}
+
+export const downloadProjectHandler = async (projectName, loading) => {
+  console.log(projectName)
+  if (projectName) {
+    try {
+      let listOfFiles = await storageRoot.child(`/projects/${projectName}`).list()
+      let parsedFiles = await Promise.all(
+        listOfFiles.items.map(async (e) => {
+          return { ...JSON.parse(e.name), blob: await e.getDownloadURL() }
+        })
+      )
+
+      return parsedFiles
+    } catch (e) {
+      console.log(e)
+    }
+  }
+}
+
+export const addNewPartOfProject = async (projectArray, projectName, callback) => {
   if (projectArray) {
+    callback(true)
     let listOfFiles = await storageRoot.child(`/projects/${projectName}`).list()
     let existsFiles = listOfFiles.items.map((e) => {
       return JSON.parse(e.name).id
@@ -48,8 +73,20 @@ export const addNewPartOfProject = async (projectArray, projectName) => {
     let existsNames = listOfFiles.items.map((e) => {
       return JSON.parse(e.name)
     })
+    let projectDescription = projectArray.map((e, i) => {
+      return { order: i, eng: e.eng, rus: e.rus, id: e.id, duration: e.duration }
+    })
+    try {
+      await firestore.collection('projects').doc(projectName).set({
+        projectName,
+        projectDescription,
+      })
+      console.log('done')
+    } catch (e) {
+      console.log(e)
+    }
 
-    Promise.all(
+    await Promise.all(
       projectArray.map(async (e, i) => {
         let pieceName = JSON.stringify({ order: i, eng: e.eng, rus: e.rus, id: e.id, duration: e.duration })
         if (existsFiles.includes(e.id)) {
@@ -66,5 +103,6 @@ export const addNewPartOfProject = async (projectArray, projectName) => {
         console.log('Done')
       })
     )
+    callback(false)
   }
 }
